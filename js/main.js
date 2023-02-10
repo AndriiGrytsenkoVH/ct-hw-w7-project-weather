@@ -3,28 +3,40 @@
 
 
 // Grab the form
-let form = document.getElementById('countryForm');
+let form = document.getElementById('weatherForm');
 // console.log(form);
 
 async function handleFormSubmit(e){
     e.preventDefault(); // Prevent the event from refreshing the page
-    // console.log(e);
-    let countryName = e.target.countryName.value;
-    console.log(countryName);
+    let display = document.getElementById('weatherDisplay');
 
-    let countryInfo = await getCountryInfo(countryName);
-    buildCountryCard(countryInfo);
+    display.innerHTML = "";
+
+    let cityName = e.target.cityName.value;
+    let weatherInfo = await getWeatherInfo(cityName);
+
+    let displayTitle = document.createElement('h2');
+    displayTitle.className = 'text-center';
+    displayTitle.innerHTML = cityName;
+    display.append(displayTitle)
+
+    buildWeatherCard(display, 'Temperature', 'bg-color-primary', weatherInfo.main.temp);
+    buildWeatherCard(display, 'High', 'bg-color-primary', weatherInfo.main.temp_max);
+    buildWeatherCard(display, 'Low', 'bg-color-primary', weatherInfo.main.temp_min);
+    buildWeatherCard(display, 'Feels Like', 'bg-color-primary', weatherInfo.feels_like);
+
     // Clear the input box at the end
-    e.target.countryName.value = '';
+    e.target.cityName.value = '';
 };
 
 form.addEventListener('submit', handleFormSubmit);
 
 // Function that takes in a country name, makes a GET request to API, returns data
-async function getCountryInfo(countryName){
-    let response = await fetch(`https://restcountries.com/v3.1/name/${countryName}`)
+async function getWeatherInfo(cityName){
+    let response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${API_KEY}&units=metric`)
     let data = await response.json();
-    return data[0]
+    console.log(data)
+    return data
 }
 
 // function getCountryInfo2(countryName){
@@ -34,35 +46,28 @@ async function getCountryInfo(countryName){
 // }
 
 // Function that will take in country object and build an HTML card and add to gallery
-function buildCountryCard(countryObj){
+function buildWeatherCard(display, title, color, value){
 
     // Create a card div
     let card = document.createElement('div')
-    card.className = 'card h-100';
-
-    // Create a top image for card
-    let image = document.createElement('img');
-    image.className = 'card-img-top';
-    image.src = countryObj.flags.png;
-    // Add image as a child to the card
-    card.append(image);
+    card.className = `card h-100 ${color}`;
     
     // Create card body
     let cardBody = document.createElement('div');
     cardBody.className = 'card-body';
     
     // Create country name and population elements
-    let countryTitle = document.createElement('h5');
-    countryTitle.className = 'card-title';
-    countryTitle.innerHTML = countryObj.name.official;
+    let cardTitle = document.createElement('h5');
+    cardTitle.className = 'card-title';
+    cardTitle.innerHTML = title;
     
-    let countryPopulation = document.createElement('p');
-    countryPopulation.className = 'card-text';
-    countryPopulation.innerHTML = `Population: ${countryObj.population.toLocaleString('en-US')}`
+    let cardValue = document.createElement('p');
+    cardValue.className = 'card-text';
+    cardValue.innerHTML = value
     
     // Add the title and population to the card body
-    cardBody.append(countryTitle);
-    cardBody.append(countryPopulation);
+    cardBody.append(cardTitle);
+    cardBody.append(cardValue);
     
     // Add card body to card
     card.append(cardBody);
@@ -75,7 +80,7 @@ function buildCountryCard(countryObj){
     col.append(card);
 
     // Get the country display and add the column
-    let display = document.getElementById('countryDisplay');
+ 
     display.append(col);
 
 }
